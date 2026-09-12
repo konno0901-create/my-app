@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>日常記録</title>
+<style>
+    :root {
+        --navy: #17365D;
+        --border: #A6C2DE;
+        --bg-gray: #F7F9FC;
+        --btn-red: #D32F2F;
+        --btn-green: #2E7D32;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #FFFFFF; color: #111; padding-bottom: 30px; }
+
+    /* ヘッダー */
+    .header {
+        background-color: var(--navy);
+        color: white;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    /* 日付ナビゲーション */
+    .date-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        gap: 8px;
+    }
+    .date-btn {
+        background-color: #EBF2FA;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        height: 42px;
+        width: 48px;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .date-picker-wrapper {
+        flex: 1;
+        position: relative;
+    }
+    .date-picker {
+        width: 100%;
+        height: 42px;
+        background-color: #EBF2FA;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        color: #111;
+        outline: none;
+    }
+
+    /* タブ */
+    .tab-container {
+        display: flex;
+        padding: 0 16px;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .tab-btn {
+        flex: 1;
+        height: 42px;
+        background-color: #EBF2FA;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 18px;
+        color: var(--navy);
+        cursor: pointer;
+    }
+    .tab-btn.active {
+        border-bottom: 4px solid var(--btn-red);
+        border-radius: 8px 8px 4px 4px;
+        color: var(--btn-red);
+        font-weight: bold;
+    }
+
+    /* コンテナ・カード */
+    .content-area { padding: 0 16px; }
+    .card {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 12px;
+        background-color: #FFF;
+    }
+
+    /* 表ヘッダー */
+    .table-head-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+    .table-head {
+        background-color: #EBF2FA;
+        color: var(--navy);
+        font-weight: bold;
+        text-align: center;
+        padding: 6px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    /* 行レイアウト */
+    .row { display: flex; align-items: center; margin-bottom: 6px; gap: 4px; }
+    .label-main { font-weight: bold; font-size: 16px; width: 80px; text-align: left; }
+    .label-sub { font-weight: bold; font-size: 15px; color: #333; width: 65px; text-align: center; }
+    .input-box {
+        flex: 1;
+        height: 36px;
+        background-color: var(--bg-gray);
+        border: 1px solid #B0BEC5;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        outline: none;
+    }
+    .unit-text { font-size: 14px; font-weight: bold; color: #444; width: 45px; text-align: left; padding-left: 4px; }
+    .dw-diff { font-size: 15px; font-weight: bold; width: 75px; text-align: center; }
+    .dw-plus { color: #D00000; }
+    .dw-minus { color: #0000D0; }
+    .dw-zero { color: #333; }
+
+    /* 朝血圧・採用値 */
+    .bp-m-container { display: flex; gap: 8px; }
+    .bp-m-left { flex: 3.2; }
+    .bp-m-right {
+        flex: 1.8;
+        background-color: #F0F4F8;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 6px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .bp-radio-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+    .bp-radio { transform: scale(1.2); }
+
+    /* 透析中血圧 */
+    .during-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0;
+        border-top: 1px solid #EEE;
+        font-size: 15px;
+    }
+    .btn-add {
+        background-color: #EBF2FA;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .btn-del {
+        background-color: #FFEBEE;
+        border: 1px solid #FFCDD2;
+        color: #C62828;
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    /* メモ */
+    .memo-area {
+        width: 100%;
+        height: 100px;
+        background-color: var(--bg-gray);
+        border: 1px solid #B0BEC5;
+        border-radius: 6px;
+        padding: 8px;
+        font-size: 16px;
+        outline: none;
+        resize: none;
+    }
+
+    /* 保存ボタン */
+    .save-btn {
+        width: 100%;
+        height: 52px;
+        background-color: var(--btn-red);
+        border: 1px solid #C62828;
+        border-radius: 8px;
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .save-btn.changed {
+        background-color: var(--btn-green);
+        border-color: #1B5E20;
+    }
+
+    /* トースト通知 */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 15px;
+        display: none;
+        z-index: 1000;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div>☰</div>
+    <div>日常記録</div>
+    <div>▣</div>
+</div>
+
+<div class="date-nav">
+    <button class="date-btn" onclick="changeDate(-1)">〈</button>
+    <div class="date-picker-wrapper">
+        <input type="date" id="datePicker" class="date-picker" onchange="onDateSelect()">
+    </div>
+    <button class="date-btn" onclick="changeDate(1)">〉</button>
+</div>
+
+<div class="tab-container">
+    <button id="tabWeight" class="tab-btn active" onclick="switchTab('weight')">⚖️ 体重</button>
+    <button id="tabBp" class="tab-btn" onclick="switchTab('bp')">🩺 血圧</button>
+</div>
+
+<div class="content-area">
+    <!-- 体重タブ内容 -->
+    <div id="viewWeight">
+        <div class="table-head-row">
+            <div class="table-head" style="flex:2;">項目</div>
+            <div class="table-head" style="flex:3.2;">測定値</div>
+            <div class="table-head" style="flex:1.2;">DW差</div>
+        </div>
+
+        <!-- 朝体重 -->
+        <div class="card">
+            <div class="row">
+                <div class="label-main">朝体重</div>
+                <div class="label-sub">体重</div>
+                <input type="number" step="0.1" id="morning_weight" class="input-box" oninput="markChanged(); calcDW();">
+                <div class="unit-text">kg</div>
+                <div id="dw_morning_weight" class="dw-diff dw-zero">ー</div>
+            </div>
+            <div class="row">
+                <div class="label-main"></div>
+                <div class="label-sub">体脂肪</div>
+                <input type="number" step="0.1" id="body_fat" class="input-box" placeholder="入力" oninput="markChanged()">
+                <div class="unit-text">%</div>
+                <div class="dw-diff"></div>
+            </div>
+            <div class="row">
+                <div class="label-main"></div>
+                <div class="label-sub">筋肉量</div>
+                <input type="number" step="0.1" id="muscle_mass" class="input-box" placeholder="入力" oninput="markChanged()">
+                <div class="unit-text">kg</div>
+                <div class="dw-diff"></div>
+            </div>
+            <div class="row">
+                <div class="label-main"></div>
+                <div class="label-sub">内臓脂肪</div>
+                <input type="number" step="1" id="visceral_fat" class="input-box" placeholder="入力" oninput="markChanged()">
+                <div class="unit-text">レベル</div>
+                <div class="dw-diff"></div>
+            </div>
+        </div>
+
+        <!-- 透析前・後体重 -->
+        <div class="card">
+            <div class="row">
+                <div class="label-main" style="width:145px;">透析前体重</div>
+                <input type="number" step="0.1" id="dialysis_before_weight" class="input-box" oninput="markChanged(); calcDW();">
+                <div class="unit-text">kg</div>
+                <div id="dw_dialysis_before_weight" class="dw-diff dw-zero">ー</div>
+            </div>
+            <div class="row" style="margin-bottom:0;">
+                <div class="label-main" style="width:145px;">透析後体重</div>
+                <input type="number" step="0.1" id="dialysis_after_weight" class="input-box" oninput="markChanged(); calcDW();">
+                <div class="unit-text">kg</div>
+                <div id="dw_dialysis_after_weight" class="dw-diff dw-zero">ー</div>
+            </div>
+        </div>
+
+        <!-- 夜体重 -->
+        <div class="card">
+            <div class="row">
+                <div class="label-main">夜体重</div>
+                <div class="label-sub">体重</div>
+                <input type="number" step="0.1" id="night_weight" class="input-box" oninput="markChanged(); calcDW();">
+                <div class="unit-text">kg</div>
+                <div id="dw_night_weight" class="dw-diff dw-zero">ー</div>
+            </div>
+            <div class="row">
+                <div class="label-main"></div>
+                <div class="label-sub">体脂肪</div>
+                <input type="number" step="0.1" id="night_body_fat" class="input-box" placeholder="入力" oninput="markChanged()">
+                <div class="unit-text">%</div>
+                <div class="dw-diff"></div>
+            </div>
+            <div class="row">
+                <div class="label-main"></div>
+                <div class="label-sub">筋肉量</div>
+                <input type="number" step="0.1" id="night_muscle_mass" class="input-box" placeholder="入力" oninput="markChanged()">
+                <div class="unit-text">kg</div>
+                <div class="dw-diff"></div>
+            </div>
+            <div class="row">
+                <div class="label-main"></div>
+                <div class="label-sub">内臓脂肪</div>
+                <input type="number" step="1" id="night_visceral_fat" class="input-box" placeholder="入力" oninput="markChanged()">
+                <div class="unit-text">レベル</div>
+                <div class="dw-diff"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 血圧タブ内容 -->
+    <div id="viewBp" style="display:none;">
+        <div class="table-head-row">
+            <div class="table-head" style="flex:1.8;">区分</div>
+            <div class="table-head" style="flex:1.2;">高(mmHg)</div>
+            <div class="table-head" style="flex:1.2;">低(mmHg)</div>
+            <div class="table-head" style="flex:1.2;">脈拍(bpm)</div>
+        </div>
+
+        <!-- 朝血圧 (3回測定) -->
+        <div class="card">
+            <div style="font-weight:bold; font-size:15px; margin-bottom:6px;">朝血圧 (3回測定)</div>
+            <div class="bp-m-container">
+                <div class="bp-m-left">
+                    <div class="bp-radio-row">
+                        <input type="radio" name="bp_select" value="1" class="bp-radio" onchange="updateAdoptedBP()">
+                        <input type="number" id="bp_m1_sys" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                        <input type="number" id="bp_m1_dia" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                        <input type="number" id="bp_m1_pulse" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                    </div>
+                    <div class="bp-radio-row">
+                        <input type="radio" name="bp_select" value="2" class="bp-radio" onchange="updateAdoptedBP()">
+                        <input type="number" id="bp_m2_sys" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                        <input type="number" id="bp_m2_dia" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                        <input type="number" id="bp_m2_pulse" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                    </div>
+                    <div class="bp-radio-row">
+                        <input type="radio" name="bp_select" value="3" class="bp-radio" checked onchange="updateAdoptedBP()">
+                        <input type="number" id="bp_m3_sys" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                        <input type="number" id="bp_m3_dia" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                        <input type="number" id="bp_m3_pulse" class="input-box" oninput="markChanged(); updateAdoptedBP();">
+                    </div>
+                </div>
+                <div class="bp-m-right">
+                    <div style="font-size:12px; font-weight:bold; color:var(--navy);">朝血圧(採用値)</div>
+                    <div id="adopted_val" style="font-size:18px; font-weight:bold; color:var(--navy); margin: 4px 0;">ー / ー</div>
+                    <div id="adopted_pulse" style="font-size:12px; color:#555;">脈拍: ー</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 透析前血圧 -->
+        <div class="card">
+            <div class="row">
+                <div class="label-main" style="width:110px;">透析前血圧</div>
+                <input type="number" id="bp_before_sys" class="input-box" oninput="markChanged()">
+                <input type="number" id="bp_before_dia" class="input-box" oninput="markChanged()">
+                <input type="number" id="bp_before_pulse" class="input-box" oninput="markChanged()">
+            </div>
+        </div>
+
+        <!-- 透析中血圧 -->
+        <div class="card">
+            <div style="font-weight:bold; font-size:15px; margin-bottom:6px;">透析中血圧</div>
+            <div class="row">
+                <input type="number" id="during_sys" class="input-box" placeholder="高">
+                <input type="number" id="during_dia" class="input-box" placeholder="低">
+                <input type="number" id="during_pulse" class="input-box" placeholder="脈拍">
+                <button class="btn-add" onclick="addDuringBP()">＋追加</button>
+            </div>
+            <div id="during_list"></div>
+        </div>
+
+        <!-- 透析後血圧 -->
+        <div class="card">
+            <div class="row">
+                <div class="label-main" style="width:110px;">透析後血圧</div>
+                <input type="number" id="bp_after_sys" class="input-box" oninput="markChanged()">
+                <input type="number" id="bp_after_dia" class="input-box" oninput="markChanged()">
+                <input type="number" id="bp_after_pulse" class="input-box" oninput="markChanged()">
+            </div>
+        </div>
+
+        <!-- 夜血圧 -->
+        <div class="card">
+            <div class="row">
+                <div class="label-main" style="width:110px;">夜血圧</div>
+                <input type="number" id="bp_night_sys" class="input-box" oninput="markChanged()">
+                <input type="number" id="bp_night_dia" class="input-box" oninput="markChanged()">
+                <input type="number" id="bp_night_pulse" class="input-box" oninput="markChanged()">
+            </div>
+        </div>
+    </div>
+
+    <!-- メモ欄 -->
+    <div style="font-weight:bold; font-size:18px; margin: 12px 0 6px 0;">メモ</div>
+    <textarea id="memo" class="memo-area" placeholder="メモを入力してください" oninput="markChanged()"></textarea>
+
+    <!-- 保存ボタン -->
+    <button id="saveBtn" class="save-btn" onclick="saveData()">💾 保存</button>
+</div>
+
+<div id="toast" class="toast">✅ 保存しました！</div>
+
+<script>
+    const DW = 62.7; // ドライウェイト設定値
+    let currentDate = new Date().toISOString().split('T')[0];
+    let duringBpArray = [];
+
+    const fieldIds = [
+        "morning_weight", "body_fat", "muscle_mass", "visceral_fat",
+        "dialysis_before_weight", "dialysis_after_weight",
+        "night_weight", "night_body_fat", "night_muscle_mass", "night_visceral_fat", "memo",
+        "bp_m1_sys", "bp_m1_dia", "bp_m1_pulse",
+        "bp_m2_sys", "bp_m2_dia", "bp_m2_pulse",
+        "bp_m3_sys", "bp_m3_dia", "bp_m3_pulse",
+        "bp_before_sys", "bp_before_dia", "bp_before_pulse",
+        "bp_after_sys", "bp_after_dia", "bp_after_pulse",
+        "bp_night_sys", "bp_night_dia", "bp_night_pulse"
+    ];
+
+    // 初期化
+    window.onload = () => {
+        document.getElementById("datePicker").value = currentDate;
+        loadData();
+    };
+
+    // タブ切替
+    function switchTab(tab) {
+        document.getElementById("tabWeight").classList.toggle("active", tab === 'weight');
+        document.getElementById("tabBp").classList.toggle("active", tab === 'bp');
+        document.getElementById("viewWeight").style.display = (tab === 'weight') ? 'block' : 'none';
+        document.getElementById("viewBp").style.display = (tab === 'bp') ? 'block' : 'none';
+    }
+
+    // 日付移動
+    function changeDate(days) {
+        let d = new Date(currentDate);
+        d.setDate(d.getDate() + days);
+        currentDate = d.toISOString().split('T')[0];
+        document.getElementById("datePicker").value = currentDate;
+        loadData();
+    }
+
+    function onDateSelect() {
+        currentDate = document.getElementById("datePicker").value;
+        loadData();
+    }
+
+    // 未保存変更マーク
+    function markChanged() {
+        document.getElementById("saveBtn").classList.add("changed");
+    }
+
+    // データ読み込み（LocalStorage経由・完全オフライン対応）
+    function loadData() {
+        const json = localStorage.getItem("rec_" + currentDate);
+        const data = json ? JSON.parse(json) : {};
+
+        fieldIds.forEach(id => {
+            document.getElementById(id).value = data[id] || "";
+        });
+
+        const selectVal = data["bp_morning_select"] || "3";
+        document.querySelector(`input[name="bp_select"][value="${selectVal}"]`).checked = true;
+
+        duringBpArray = data["bp_during_list"] || [];
+        renderDuringBP();
+
+        calcDW();
+        updateAdoptedBP();
+        document.getElementById("saveBtn").classList.remove("changed");
+    }
+
+    // データ保存
+    function saveData() {
+        const data = {};
+        fieldIds.forEach(id => {
+            data[id] = document.getElementById(id).value;
+        });
+
+        const selectedRadio = document.querySelector('input[name="bp_select"]:checked');
+        data["bp_morning_select"] = selectedRadio ? selectedRadio.value : "3";
+        data["bp_during_list"] = duringBpArray;
+
+        localStorage.setItem("rec_" + currentDate, JSON.stringify(data));
+        document.getElementById("saveBtn").classList.remove("changed");
+
+        // トースト通知
+        const toast = document.getElementById("toast");
+        toast.style.display = "block";
+        setTimeout(() => toast.style.display = "none", 2000);
+    }
+
+    // DW差計算
+    function calcDW() {
+        ["morning_weight", "dialysis_before_weight", "dialysis_after_weight", "night_weight"].forEach(id => {
+            const val = parseFloat(document.getElementById(id).value);
+            const el = document.getElementById("dw_" + id);
+            if (!isNaN(val)) {
+                const diff = (val - DW).toFixed(1);
+                if (diff > 0) {
+                    el.className = "dw-diff dw-plus";
+                    el.textContent = "+" + diff + " kg";
+                } else if (diff < 0) {
+                    el.className = "dw-diff dw-minus";
+                    el.textContent = diff + " kg";
+                } else {
+                    el.className = "dw-diff dw-zero";
+                    el.textContent = "±0.0 kg";
+                }
+            } else {
+                el.className = "dw-diff dw-zero";
+                el.textContent = "ー";
+            }
+        });
+    }
+
+    // 朝血圧採用値更新
+    function updateAdoptedBP() {
+        const idx = document.querySelector('input[name="bp_select"]:checked').value;
+        const sys = document.getElementById(`bp_m${idx}_sys`).value;
+        const dia = document.getElementById(`bp_m${idx}_dia`).value;
+        const pulse = document.getElementById(`bp_m3_pulse`).value; // 採用値の脈拍
+
+        document.getElementById("adopted_val").textContent = (sys && dia) ? `${sys} / ${dia}` : "ー / ー";
+        document.getElementById("adopted_pulse").textContent = "脈拍: " + (pulse || "ー");
+    }
+
+    // 透析中血圧 追加・削除
+    function addDuringBP() {
+        const sys = document.getElementById("during_sys").value;
+        const dia = document.getElementById("during_dia").value;
+        const pulse = document.getElementById("during_pulse").value;
+
+        if (sys || dia || pulse) {
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            duringBpArray.push({ time: timeStr, sys, dia, pulse });
+            
+            document.getElementById("during_sys").value = "";
+            document.getElementById("during_dia").value = "";
+            document.getElementById("during_pulse").value = "";
+
+            renderDuringBP();
+            markChanged();
+        }
+    }
+
+    function removeDuringBP(index) {
+        duringBpArray.splice(index, 1);
+        renderDuringBP();
+        markChanged();
+    }
+
+    function renderDuringBP() {
+        const container = document.getElementById("during_list");
+        container.innerHTML = "";
+        duringBpArray.forEach((item, idx) => {
+            container.innerHTML += `
+                <div class="during-item">
+                    <div style="font-weight:bold;">${item.time}</div>
+                    <div>${item.sys || 'ー'} / ${item.dia || 'ー'}</div>
+                    <div>脈: ${item.pulse || 'ー'}</div>
+                    <button class="btn-del" onclick="removeDuringBP(${idx})">削除</button>
+                </div>
+            `;
+        });
+    }
+</script>
+</body>
+</html>
